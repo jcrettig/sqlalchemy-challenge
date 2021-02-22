@@ -11,6 +11,10 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 
+from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+Base = declarative_base()
+
 from flask import Flask, jsonify
 
 #################################################
@@ -44,7 +48,7 @@ def home():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start> and api/v1.0/<start>/<end>"
+        f"/api/v1.0/max_min_avg_temperature"
     )
 
 
@@ -133,8 +137,8 @@ def tobs():
 
     return jsonify(all_temps)
 
-@app.route("/api/v1.0/<start> and api/v1.0/<start>/<end>")
-def start_end():
+@app.route("/api/v1.0/max_min_avg_temperature")
+def x():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
@@ -146,19 +150,59 @@ def start_end():
     3) When given the start and end date, calculae the TMIN, TAVG and TMAX for dates between the start 
         and end date inclusive.
     """
-   
+    #Query to determine the max date
+    max_date = (session.query(func.max(Measurements.date)).all())
+
+    # calculate the average temperature during a period of time.
+
+    y2 = 2017
+    m2 = 8
+    d2 = 23
+
+    
+    print("Please enter a start date for the query as prompted")
+    print(f"your start dated should be from 2010-1-1 to {max_date}")
+    y1 = int(input("Input start year(format: 20##): "))
+    m1 = int(input("Input start month: "))
+    d1 = int(input("Input start day: "))   
+    print(f"The start date you have selected is {y1}-{m1}-{d1}")
+
+    check1 = input("Would you like to enter an end date for the query? Otherwise the end date will be 8/23/2017 (y/n)")
+    if (check1.lower() == "y"):
+
+        print("Please enter an end date for the query as prompted")
+        print(f"your end dated should be from 2010-1-1 to {max_date} and greater than your start date")        
+        y2 = int(input("Input end year(format: 20##): "))
+        m2 = int(input("Input end month: "))
+        d2 = int(input("Input start day: "))
+        print(f"The end date you have selected is {y2}-{m2}-{d2}")
     
 
+    start_date = dt.date(y1,m1,d1)
+    end_date = dt.date(y2,m2,d2)
 
+    avg_temp = session.query(func.avg(Measurements.tobs)).\
+        filter(Measurements.date >= start_date).\
+        filter(Measurements.date <= end_date).all()
+  
+    print(f"The average temperature at station USC00519281 is {avg_temp} degrees.")
+
+    min_temp = session.query(func.min(Measurements.tobs)).\
+        filter(Measurements.date >= start_date).\
+        filter(Measurements.date <= end_date).all()
+  
+    print(f"The minimum temperature at station USC00519281 is {min_temp} degrees.")
+
+    max_temp = session.query(func.max(Measurements.tobs)).\
+        filter(Measurements.date >= start_date).\
+        filter(Measurements.date <= end_date).all()
+  
+    print(f"The minimum temperature at station USC00519281 is {max_temp} degrees.")
 
 
     session.close()
 
-    #all_temps = list(np.ravel(temp_q))
-
-    #return jsonify(all_temps)
-
-
+    return jsonify(f"TMIN: {min_temp}", f"TAVG: {avg_temp}", f"TMAX: {max_temp}")
 
 
 if __name__ == '__main__':
