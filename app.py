@@ -21,7 +21,7 @@ from flask import Flask, jsonify
 # Database Setup
 #################################################
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
-
+#engine = create_engine("sqlite:///C:/Chris/Butler_Homework/Week_10/sqlalchemy-challenge/Resources/hawaii.sqlite")
 # reflect an existing database into a new model
 Base = automap_base()
 # reflect the tables
@@ -77,8 +77,7 @@ def precipitation():
     all_precip = []
     for date, prcp in prcp_q:
         precip_dict = {}
-        precip_dict["date"] = date
-        precip_dict["prcp"] = prcp
+        precip_dict[date]=prcp
         all_precip.append(precip_dict) 
 
     return jsonify(all_precip)
@@ -174,7 +173,7 @@ def x():
         print(f"your end dated should be from 2010-1-1 to {max_date} and greater than your start date")        
         y2 = int(input("Input end year(format: 20##): "))
         m2 = int(input("Input end month: "))
-        d2 = int(input("Input start day: "))
+        d2 = int(input("Input end day: "))
         print(f"The end date you have selected is {y2}-{m2}-{d2}")
     
 
